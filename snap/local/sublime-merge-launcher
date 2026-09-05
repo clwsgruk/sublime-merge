@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+case "${SNAP_ARCH:-}" in
+  amd64)
+    triplet=x86_64-linux-gnu
+    loader=ld-linux-x86-64.so.2
+    ;;
+  arm64)
+    triplet=aarch64-linux-gnu
+    loader=ld-linux-aarch64.so.1
+    ;;
+  *)
+    echo "Unsupported architecture: ${SNAP_ARCH:-unset}" >&2
+    exit 1
+    ;;
+esac
+
+binary="$SNAP/opt/sublime_merge/sublime_merge"
+library_path="$SNAP/lib/$triplet:$SNAP/usr/lib/$triplet:/snap/core24/current/lib/$triplet:/snap/core24/current/usr/lib/$triplet"
+
+exec "/snap/core24/current/lib/$triplet/$loader" \
+  --argv0 "$binary" \
+  --library-path "$library_path" \
+  "$binary" "$@"
